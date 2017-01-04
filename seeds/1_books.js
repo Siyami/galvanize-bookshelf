@@ -1,7 +1,7 @@
 'use strict';
 
 /* eslint camelcase: ["error", {properties: "never"}]*/
-/* eslint max-len: ["error", 2000]*/
+/* eslint max-len: ["error", 1000]*/
 exports.seed = function(knex) {
   return knex('books').del()
     .then(() => {
