@@ -1,23 +1,142 @@
+// 'use strict';
+//
+// const express = require('express');
+//
+// // eslint-disable-next-line new-cap
+// const router = express.Router();
+//
+// // YOUR CODE HERE
+//
+// const {
+//   camelizeKeys
+// } = require('humps');
+//
+// const knex = require('../knex');
+//
+// router.get('/books', (_req, res, next) => {
+//   knex('books')
+//     .orderBy('title')
+//     .then((books) => {
+//       res.send((camelizeKeys(books)));
+//     })
+//     .catch((err) => {
+//       next(err);
+//     });
+// });
+//
+// router.get('/books/:id', (req, res, next) => {
+//   knex('books')
+//     .where('id', req.params.id)
+//     .first()
+//     .then((book) => {
+//       if (!book) {
+//         return next();
+//       }
+//       res.send(camelizeKeys(book));
+//     })
+//     .catch((err) => {
+//       next(err);
+//     });
+// });
+//
+// router.post('/books', (req, res, next) => {
+//   knex('books')
+//     .insert({
+//       title: req.body.title,
+//       author: req.body.author,
+//       genre: req.body.genre,
+//       description: req.body.description,
+//       cover_url: req.body.coverUrl
+//     }, '*')
+//     .then((books) => {
+//       res.set('Content-Type', 'application/json');
+//       res.send(camelizeKeys(books[0]));
+//     })
+//     .catch((err) => {
+//       next(err);
+//     });
+// });
+//
+//
+// router.patch('/books/:id', (req, res, next) => {
+//   knex('books')
+//     .where('id', req.params.id)
+//     .first()
+//     .then((book) => {
+//       if (!book) {
+//         return next();
+//       }
+//
+//       return knex('books')
+//         .update({
+//           title: req.body.title,
+//           author: req.body.author,
+//           genre: req.body.genre,
+//           description: req.body.description,
+//           cover_url: req.body.coverUrl
+//         }, '*')
+//         .where('id', req.params.id);
+//     })
+//     .then((books) => {
+//       res.set('Content-Type', 'application/json')
+//       res.send(camelizeKeys(books[0]));
+//     })
+//     .catch((err) => {
+//       next(err);
+//     });
+// });
+//
+// router.delete('/books/:id', (req, res, next) => {
+//   let book;
+//
+//   knex('books')
+//     .where('id', req.params.id)
+//     .first()
+//     .then((row) => {
+//       if (!row) {
+//         return next();
+//       }
+//
+//       book = row;
+//
+//       return knex('books')
+//         .del()
+//         .where('id', req.params.id);
+//     })
+//     .then(() => {
+//       delete book.id;
+//       res.send(camelizeKeys(book));
+//     })
+//     .catch((err) => {
+//       next(err);
+//     });
+// });
+//
+// module.exports = router;
+
+
+
+// CLASS SOLUTION
+
 'use strict';
 
+const boom = require('boom');
 const express = require('express');
+const knex = require('../knex');
+const {
+  camelizeKeys, decamelizeKeys
+} = require('humps');
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
-// YOUR CODE HERE
-
-const {
-  camelizeKeys
-} = require('humps');
-
-const knex = require('../knex');
-
 router.get('/books', (_req, res, next) => {
   knex('books')
     .orderBy('title')
-    .then((books) => {
-      res.send((camelizeKeys(books)));
+    .then((rows) => {
+      const books = camelizeKeys(rows);
+
+      res.send(books);
     })
     .catch((err) => {
       next(err);
@@ -25,14 +144,23 @@ router.get('/books', (_req, res, next) => {
 });
 
 router.get('/books/:id', (req, res, next) => {
+  const id = Number.parseInt(req.params.id);
+
+  if (Number.isNaN(id)) {
+    return next();
+  }
+
   knex('books')
-    .where('id', req.params.id)
+    .where('id', id)
     .first()
-    .then((book) => {
-      if (!book) {
-        return next();
+    .then((row) => {
+      if (!row) {
+        throw boom.create(404, 'Not Found');
       }
-      res.send(camelizeKeys(book));
+
+      const book = camelizeKeys(row);
+
+      res.send(book);
     })
     .catch((err) => {
       next(err);
@@ -40,46 +168,94 @@ router.get('/books/:id', (req, res, next) => {
 });
 
 router.post('/books', (req, res, next) => {
+  const {
+    title, author, genre, description, coverUrl
+  } = req.body;
+
+  if (!title || !title.trim()) {
+    return next(boom.create(400, 'Title must not be blank'));
+  }
+
+  if (!author || !author.trim()) {
+    return next(boom.create(400, 'Author must not be blank'));
+  }
+
+  if (!genre || !genre.trim()) {
+    return next(boom.create(400, 'Genre must not be blank'));
+  }
+
+  if (!description || !description.trim()) {
+    return next(boom.create(400, 'Description must not be blank'));
+  }
+
+  if (!coverUrl || !coverUrl.trim()) {
+    return next(boom.create(400, 'Cover URL must not be blank'));
+  }
+
+  const insertBook = {
+    title, author, genre, description, coverUrl
+  };
+
   knex('books')
-    .insert({
-      title: req.body.title,
-      author: req.body.author,
-      genre: req.body.genre,
-      description: req.body.description,
-      cover_url: req.body.coverUrl
-    }, '*')
-    .then((books) => {
-      res.set('Content-Type', 'application/json');
-      res.send(camelizeKeys(books[0]));
+    .insert(decamelizeKeys(insertBook), '*')
+    .then((rows) => {
+      const book = camelizeKeys(rows[0]);
+
+      res.send(book);
     })
     .catch((err) => {
       next(err);
     });
 });
 
-
 router.patch('/books/:id', (req, res, next) => {
+  const id = Number.parseInt(req.params.id);
+
+  if (Number.isNaN(id)) {
+    return next();
+  }
+
   knex('books')
-    .where('id', req.params.id)
+    .where('id', id)
     .first()
     .then((book) => {
       if (!book) {
-        return next();
+        throw boom.create(404, 'Not Found');
+      }
+
+      const {
+        title, author, genre, description, coverUrl
+      } = req.body;
+      const updateBook = {};
+
+      if (title) {
+        updateBook.title = title;
+      }
+
+      if (author) {
+        updateBook.author = author;
+      }
+
+      if (genre) {
+        updateBook.genre = genre;
+      }
+
+      if (description) {
+        updateBook.description = description;
+      }
+
+      if (coverUrl) {
+        updateBook.coverUrl = coverUrl;
       }
 
       return knex('books')
-        .update({
-          title: req.body.title,
-          author: req.body.author,
-          genre: req.body.genre,
-          description: req.body.description,
-          cover_url: req.body.coverUrl
-        }, '*')
-        .where('id', req.params.id);
+        .update(decamelizeKeys(updateBook), '*')
+        .where('id', id);
     })
-    .then((books) => {
-      res.set('Content-Type', 'application/json')
-      res.send(camelizeKeys(books[0]));
+    .then((rows) => {
+      const book = camelizeKeys(rows[0]);
+
+      res.send(book);
     })
     .catch((err) => {
       next(err);
@@ -87,29 +263,26 @@ router.patch('/books/:id', (req, res, next) => {
 });
 
 router.delete('/books/:id', (req, res, next) => {
-  let book;
+  const id = Number.parseInt(req.params.id);
 
+  if (Number.isNaN(id)) {
+    return next();
+  }
   knex('books')
-    .where('id', req.params.id)
-    .first()
-    .then((row) => {
-      if (!row) {
+    .del('*')
+    .where('id', id)
+    .then((books) => {
+      let book = books[0];
+      if (!book) {
         return next();
       }
-
-      book = row;
-
-      return knex('books')
-        .del()
-        .where('id', req.params.id);
-    })
-    .then(() => {
       delete book.id;
       res.send(camelizeKeys(book));
     })
     .catch((err) => {
+      console.log(err);
       next(err);
-    });
+    })
 });
 
 module.exports = router;
