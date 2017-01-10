@@ -13,7 +13,7 @@ const {
 const router = express.Router();
 
 router.get('/token', (req, res) => {
-  jwt.verify(req.cookies.token, process.env.JWT_SECRET, (err, claim) => {
+  jwt.verify(req.cookies.token, process.env.JWT_KEY, (err, _payload) => {
     if (err) {
       return res.send(false);
     }
@@ -46,20 +46,20 @@ router.post('/token', (req, res, next) => {
 
       user = camelizeKeys(row);
 
-      return bcrypt.compare(password, user.hashedPassword);
+      return bcrypt.compare(password, user.hashedPassword); //if wrong password goes to .catch
     })
     .then(() => {
       const claim = {
         userId: user.id
       };
-      const token = jwt.sign(claim, process.env.JWT_SECRET, {
-        expiresIn: '7 days'
+      const token = jwt.sign(claim, process.env.JWT_KEY, {
+        expiresIn: '7 days' // Adds an expiration field to the payload
       });
 
-      res.cookie('token', token, {
+      res.cookie('token', token, { // cookie is at the header
         httpOnly: true,
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days lives
-        secure: router.get('env') === 'production'
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // lives 7 days, if you don't include expires after you log out
+        secure: router.get('env') === 'production' //forces the token only be sent as https
       });
       delete user.hashedPassword;
 

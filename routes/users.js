@@ -92,6 +92,19 @@ router.post('/users', (req, res, next) => {
     .then((rows) => {
       const user = camelizeKeys(rows[0]);
 
+      const claim = {
+        userId: user.id
+      };
+      const token = jwt.sign(claim, process.env.JWT_KEY, {
+        expiresIn: '7 days' // Adds an expiration field to the payload
+      });
+
+      res.cookie('token', token, { // cookie is at the header
+        httpOnly: true,
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // lives 7 days, if you don't include expires after you log out
+        secure: router.get('env') === 'production' //forces the token only be sent as https
+      });
+
       delete user.hashedPassword;
 
       res.send(user);
