@@ -1,7 +1,7 @@
-// module.exports = {
-//   extends: [
-//     'ryansobol/es6',
-//     'ryansobol/mocha',
-//     'ryansobol/node'
-//   ]
-// };
+module.exports = {
+  extends: [
+    'ryansobol/es6',
+    'ryansobol/mocha',
+    'ryansobol/node'
+  ]
+};

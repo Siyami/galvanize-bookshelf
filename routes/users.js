@@ -35,9 +35,7 @@
 //
 // module.exports = router;
 
-
-//RYAN'S SOLUTION
-
+// RYAN'S SOLUTION
 
 'use strict';
 
@@ -46,6 +44,8 @@ const boom = require('boom');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const knex = require('../knex');
+const ev = require('express-validation');
+const validations = require('../validations/users');
 const {
   camelizeKeys, decamelizeKeys
 } = require('humps');
@@ -53,7 +53,7 @@ const {
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
-router.post('/users', (req, res, next) => {
+router.post('/users', ev(validations.post), (req, res, next) => {
   const {
     email, password
   } = req.body;

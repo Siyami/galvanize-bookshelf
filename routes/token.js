@@ -59,7 +59,7 @@ router.post('/token', (req, res, next) => {
       res.cookie('token', token, { // cookie is at the header
         httpOnly: true,
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // lives 7 days, if you don't include expires after you log out
-        secure: router.get('env') === 'production' //forces the token only be sent as https
+        secure: router.get('env') === 'production' // forces the token only be sent as https
       });
       delete user.hashedPassword;
 
