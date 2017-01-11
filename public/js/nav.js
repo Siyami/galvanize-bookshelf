@@ -29,14 +29,14 @@
               window.location.href = '/login.html';
             })
             .fail(() => {
-              Materialize.toast('Unable to log out. Please try again.', 3000);
+              Materialize.toast(
+                'Unable to log out. Please try again.', 3000);
             });
         });
 
         $firstNavItems.append($favorites);
         $secondNavItems.append($logout);
-      }
-      else {
+      } else {
         const $signup = $('<a>')
           .attr('href', '/signup.html')
           .text('Sign up');
