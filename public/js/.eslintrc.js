@@ -6,5 +6,4 @@ module.exports = {
     'ryansobol/materialize'
   ],
 
-  root: true
 };
