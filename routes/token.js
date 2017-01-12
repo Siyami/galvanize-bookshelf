@@ -1,3 +1,4 @@
+/* eslint max-len: ["error", 200]*/
 'use strict';
 
 const boom = require('boom');
@@ -33,7 +34,7 @@ router.post('/token', (req, res, next) => {
   }
 
   if (!password || !email.trim()) {
-    return next(boom.create(400, 'Password must not be blank'))
+    return next(boom.create(400, 'Password must not be blank'));
   }
 
   knex('users')
@@ -46,7 +47,7 @@ router.post('/token', (req, res, next) => {
 
       user = camelizeKeys(row);
 
-      return bcrypt.compare(password, user.hashedPassword); //if wrong password goes to .catch
+      return bcrypt.compare(password, user.hashedPassword); // if wrong password goes to .catch
     })
     .then(() => {
       const claim = {

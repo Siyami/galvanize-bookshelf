@@ -1,9 +1,10 @@
+/* eslint camelcase: ["error", {properties: "never"}]*/
 'use strict';
 
 exports.seed = function(knex) {
   // Deletes ALL existing entries
   return knex('favorites').del()
-    .then(function() {
+    .then(() => {
       return knex('favorites').insert([{
         id: 1,
         book_id: 1,
@@ -12,7 +13,7 @@ exports.seed = function(knex) {
         updated_at: new Date('2016-06-29 14:26:16 UTC')
       }]);
     })
-    .then(function() {
+    .then(() => {
       return knex.raw(
         "SELECT setval('favorites_id_seq', (SELECT MAX(id) FROM favorites));"
       );

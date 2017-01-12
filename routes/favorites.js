@@ -1,3 +1,4 @@
+/* eslint camelcase: ["error", {properties: "never"}]*/
 'use strict';
 
 const boom = require('boom');
