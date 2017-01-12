@@ -38,11 +38,11 @@ router.get('/favorites', authorize, (req, res, next) => {
     });
 });
 
-//'/favorites/check?bookId=1'
+// comes from /favorites/check?bookId=1
 router.get('/favorites/check', authorize, (req, res, next) => {
   const bookId = Number.parseInt(req.query.bookId);
 
-  if (!Number.isInteger(bookId)) {
+  if (!bookId) {
     return next(boom.create(400, 'Book ID must be an integer'));
   }
 
@@ -68,7 +68,7 @@ router.get('/favorites/check', authorize, (req, res, next) => {
 router.post('/favorites', authorize, (req, res, next) => {
   const bookId = Number.parseInt(req.body.bookId);
 
-  if (!Number.isInteger(bookId)) {
+  if (!bookId) {
     return next(boom.create(400, 'Book ID must be an integer'));
   }
 
@@ -80,12 +80,12 @@ router.post('/favorites', authorize, (req, res, next) => {
         throw boom.create(404, 'Book not found');
       }
 
-      const insertFavorite = {
+      const insertFav = {
         bookId, userId: req.claim.userId
       };
 
       return knex('favorites')
-        .insert(decamelizeKeys(insertFavorite), '*');
+        .insert(decamelizeKeys(insertFav), '*');
     })
     .then((rows) => {
       const favorite = camelizeKeys(rows[0]);
@@ -100,20 +100,17 @@ router.post('/favorites', authorize, (req, res, next) => {
 router.delete('/favorites', authorize, (req, res, next) => {
   const bookId = Number.parseInt(req.body.bookId);
 
-  if (!Number.isInteger(bookId)) {
+  if (!bookId) {
     return next(boom.create(400, 'Book ID must be an integer'));
   }
-
-  // eslint-disable-next-line camelcase
-  const clause = {
-    book_id: bookId,
-    user_id: req.claim.userId
-  };
 
   let favorite;
 
   knex('favorites')
-    .where(clause)
+    .where({
+      book_id: bookId,
+      user_id: req.claim.userId
+    })
     .first()
     .then((row) => {
       if (!row) {
